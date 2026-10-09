@@ -1,0 +1,16 @@
+seeds: [1, 2, 3, 4, 5]
+windows: 1200
+harmonicfit_variants:
+  - full
+  - no_interference
+  - no_ceff
+  - no_hbm
+  - no_fragment
+  - no_empty_penalty
+activevc_baselines:
+  - random
+  - binary
+  - bo
+  - activevc
+budgets: [8, 16, 24, 32, 48]
+output_root: data/results/ablation

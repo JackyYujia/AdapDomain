@@ -1,0 +1,9 @@
+models:
+  - name: resnet152
+    om_path: /path/to/resnet152.om
+    slo_ms: 30.0
+    batch_size: 1
+  - name: bert-base
+    om_path: /path/to/bert_base.om
+    slo_ms: 15.0
+    batch_size: 1

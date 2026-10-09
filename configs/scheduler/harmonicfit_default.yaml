@@ -1,0 +1,12 @@
+weights:
+  lambda_c: 0.40
+  lambda_x: 0.25
+  lambda_h: 0.15
+  lambda_q: 0.10
+  lambda_f: 0.07
+  lambda_u: 0.05
+interference:
+  eta: 0.30
+epsilon_domain_fit: 1.0e-6
+k_domains: ["cube", "vector"]
+control_budget_ms: 100

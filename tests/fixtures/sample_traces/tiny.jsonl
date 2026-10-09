@@ -1,0 +1,6 @@
+{"_type": "header", "replicas": [{"replica_id": "bert-base#0", "model": "bert-base", "slo_ms": 15.0, "batch_size": 1}]}
+{"_type": "request", "request_id": "r0", "model": "bert-base", "arrival_ms": 0.0, "deadline_ms": 15.0}
+{"_type": "request", "request_id": "r1", "model": "bert-base", "arrival_ms": 1.0, "deadline_ms": 16.0}
+{"_type": "request", "request_id": "r2", "model": "bert-base", "arrival_ms": 2.0, "deadline_ms": 17.0}
+{"_type": "request", "request_id": "r3", "model": "bert-base", "arrival_ms": 3.0, "deadline_ms": 18.0}
+{"_type": "request", "request_id": "r4", "model": "bert-base", "arrival_ms": 4.0, "deadline_ms": 19.0}

@@ -1,0 +1,4 @@
+op_name,task_duration,aic_mac_ratio,aiv_vec_ratio,hbm_bw_util
+GEMM,1.0,0.80,0.10,0.40
+ELEMWISE,0.5,0.05,0.70,0.20
+LAYERNORM,0.4,0.10,0.65,0.20

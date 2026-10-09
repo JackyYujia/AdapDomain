@@ -1,0 +1,15 @@
+ewma:
+  alpha: 0.20
+smooth_guard:
+  consecutive_trigger_count: 2
+  cooldown_seconds: 30
+  thresholds:
+    p95_drift: 0.20
+    residual_drift: 0.15
+    hbm_high: 0.85
+    queue_high: 0.80
+prescale:
+  forecast_horizon_s: 5
+nightshift:
+  migration_budget: 2
+  low_load_windows: 3

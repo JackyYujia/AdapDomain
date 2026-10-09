@@ -1,0 +1,31 @@
+platform: ascend_910b3
+device_ids: [0, 1, 2, 3]
+domains:
+  cube:
+    capacity: 20
+    unit: "logical_units"
+    telemetry_key: aic_mac_ratio
+    schedulable: true
+  vector:
+    capacity: 40
+    unit: "logical_units"
+    telemetry_key: aiv_vec_ratio
+    schedulable: true
+  hbm:
+    capacity: 1.0
+    unit: "fraction"
+    telemetry_key: hbm_bw_util
+    schedulable: false
+acl:
+  init_config_path: null
+  set_device_res_limit:
+    cube_limit_type: 0        # ACL_RT_DEV_RES_CUBE_CORE
+    vector_limit_type: 1      # ACL_RT_DEV_RES_VECTOR_CORE
+    hbm_limit_type: null
+msprof:
+  binary: msprof
+  default_metrics:
+    - PipeUtilization
+    - ArithmeticUtilization
+    - HBM
+  output_root: data/raw/msprof

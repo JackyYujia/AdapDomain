@@ -1,0 +1,29 @@
+{
+  "model_name": "bert-base",
+  "version": 1,
+  "k_domains": ["cube", "vector"],
+  "points": [
+    {
+      "model_name": "bert-base", "point_id": "low",
+      "raw_cube": 0.0, "raw_vector": 0.0, "raw_hbm": 0.0,
+      "norm_cube": 0.40, "norm_vector": 0.20,
+      "batch_size": 1, "slo_ms": 15.0,
+      "p50_ms": 4.0, "p95_ms": 6.0, "p99_ms": 7.0,
+      "goodput_qps": 100.0,
+      "feasible": true, "confidence": 0.9
+    },
+    {
+      "model_name": "bert-base", "point_id": "high",
+      "raw_cube": 0.0, "raw_vector": 0.0, "raw_hbm": 0.0,
+      "norm_cube": 0.55, "norm_vector": 0.25,
+      "batch_size": 1, "slo_ms": 15.0,
+      "p50_ms": 5.0, "p95_ms": 9.0, "p99_ms": 10.0,
+      "goodput_qps": 130.0,
+      "feasible": true, "confidence": 0.7
+    }
+  ],
+  "safe_point_id": "low",
+  "dominant_domain": "balanced",
+  "confidence_summary": 0.8,
+  "source_run_id": "fixture"
+}

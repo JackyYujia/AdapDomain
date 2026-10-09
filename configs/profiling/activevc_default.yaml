@@ -1,0 +1,8 @@
+budget: 24
+alpha: 0.40
+beta: 0.40
+gamma: 0.20
+tau: 0.15
+seed_grid: [4, 4, 3]    # V × M × HBM
+boundary_grid: [8, 8]   # V × M
+hbm_strategy: median_safe
