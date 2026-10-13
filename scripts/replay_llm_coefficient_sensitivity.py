@@ -59,12 +59,12 @@ def main() -> None:
 
     module._service_time = equal_coefficient_service_time
     equal = module.run_llm_pd_experiment(inputs)
-    print("scenario,policy,accepted,total,goodput_qps,violation_pct")
+    print("scenario,policy,accepted,total,goodput_qps,violation_pct,p95_latency_ms")
     for scenario, results in (("recorded", recorded), ("equal_coeff_1.00", equal)):
         for row in results:
             print(
                 f"{scenario},{row.policy},{row.accepted},{row.total},"
-                f"{row.goodput_qps:.6f},{row.violation_pct:.6f}"
+                f"{row.goodput_qps:.6f},{row.violation_pct:.6f},{row.p95_latency_ms:.6f}"
             )
 
 
