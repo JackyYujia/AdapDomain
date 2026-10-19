@@ -1,5 +1,14 @@
 # LLM Prefill/Decode Experiment
 
+## Execution boundary
+
+`llm-pd` is an offline scheduling model. Supplying measured phase profiles
+does not make its output a live hardware measurement. It uses modeled service
+times and a phase-arrival trace, so its `goodput_qps` is not the paper's
+request-level goodput. The official runtime source is the pinned
+`third_party/vllm-ascend` submodule; deploy and validate it on the Ascend host
+following upstream's release-specific instructions.
+
 This experiment is the runnable environment for the LLM reviewer request. It
 compares four deployment policies for LLaMA-7B-style prefill/decode serving on a
 four-card Ascend NPU node.
@@ -51,13 +60,13 @@ adapdomain llm-pd \
 Required profile CSV columns:
 
 ```text
-phase,cube_util,vector_util,hbm_gb,p95_ms,slo_ms,batch_size,sampling_policy
+phase,cube_util,vector_util,hbm_bw_util,p95_ms,slo_ms,batch_size,sampling_policy
 ```
 
 Optional profile CSV columns:
 
 ```text
-hbm_capacity_gb,kv_cache_tokens
+precision,prompt_tokens,kv_cache_tokens,kv_cache_gb
 ```
 
 Required trace CSV columns:
@@ -68,6 +77,10 @@ phase,arrival_ms,count
 
 Use `phase=prefill` or `phase=decode`. The same trace should be used for all
 policies so that goodput and SLO violation are comparable.
+`hbm_bw_util` is the measured HBM-bandwidth share, not HBM memory in GB.
+The loader averages repetitions of one operating point per phase; it rejects
+mixed batch/prompt/KV settings and mixed precisions unless a precision is
+selected with `--precision`. Keep one phase setting per precision-specific CSV.
 
 ## Ascend server quick start
 
@@ -103,10 +116,44 @@ adapdomain llm-pd \
 The measured profile should separate prefill and decode rows. Prefill rows
 should be collected from prompt-processing runs, while decode rows should use
 low-batch token generation with the sampling policy and KV-Cache size reported
-in the CSV. The resulting `llm_pd_summary.csv` is the table source for the paper.
+in the CSV. The resulting `llm_pd_summary.csv` is an offline model output,
+not the table source for a live-serving result.
+
+## Live request-level evaluation
+
+Export one request per row from the vLLM-Ascend serving run. Required columns:
+
+```text
+request_id,policy,trace,seed,arrival_ms,first_token_ms,completion_ms,output_tokens,status
+```
+
+All timestamps use one monotonic millisecond clock. `arrival_ms` is when the
+request is offered; `first_token_ms` is when its first output token is observed;
+`completion_ms` is when its final output token is observed, not a later logging
+or connection-close event. `output_tokens` counts generated tokens. Failed or
+timed-out requests have `status` other than `ok` and may leave timing fields
+empty. The log must include every offered request, including failures.
+
+For each completed request, TTFT is `first_token_ms - arrival_ms` and mean ITL
+is `(completion_ms - first_token_ms) / (output_tokens - 1)`. A one-token
+response has mean ITL zero. Goodput counts requests that meet *both* TTFT
+`<= 500 ms` and mean ITL `<= 40 ms`, divided by the offered-arrival window;
+the violation rate counts all other requests over all offered requests. The
+same offered-arrival duration and trace must be used for policy comparisons.
+
+```bash
+adapdomain llm-measure data/raw/llm/requests.csv \
+  --duration-s 60 \
+  --out data/results/llm_request_summary.csv
+```
+
+This command summarizes policy/trace/seed rows. It does not launch vLLM,
+apply ACL partitions, or claim that an offline model run produced hardware
+measurements. Retain the run configuration and model/precision identifiers
+with each raw log.
 
 ## Paper claim rule
 
-Only measured CSV mode should be used for paper numbers. The smoke run exists to
-test the scheduling harness, output format, and plotting pipeline before the NPU
-server finishes profiling.
+Only request-level logs from an actual server run should be used for the paper's
+live goodput and violation numbers. The smoke run tests the offline scheduling
+harness and output format.

@@ -1,15 +1,20 @@
 """HarmonicFit greedy planner (paper Section 4.3)."""
 from __future__ import annotations
 
-import math
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
-from typing import Mapping, Sequence
 
 from adapdomain.core.frontier import FrontierSnapshot
 from adapdomain.core.interference import InterferenceTable
 from adapdomain.core.placement import PlacementPlan, ScoreBreakdown
 from adapdomain.core.shape import TenantShape
-from adapdomain.core.types import DeviceId, EPSILON_DOMAIN_FIT, FrontierVersion, ModelId, ReplicaId
+from adapdomain.core.types import (
+    EPSILON_DOMAIN_FIT,
+    DeviceId,
+    FrontierVersion,
+    ModelId,
+    ReplicaId,
+)
 
 from .feasibility import FeasibilityFilter
 from .fragmentation import fragmentation_risk
@@ -51,7 +56,8 @@ class HarmonicFitPlanner:
         rejected: dict[ReplicaId, str] = {}
 
         for replica in replicas:
-            snap = snapshots.get(replica.model_name)
+            profile_key = replica.profile_key or replica.model_name
+            snap = snapshots.get(profile_key)
             if snap is None:
                 rejected[replica.replica_id] = "no_frontier_snapshot"
                 continue
@@ -61,12 +67,15 @@ class HarmonicFitPlanner:
                 if not ok:
                     rejected.setdefault(replica.replica_id, reason.value if reason else "infeasible")
                     continue
-                domain_names = ["cube", "vector"]
+                domain_names = [name for name in residual.residual if name in replica.domains]
+                if not domain_names:
+                    rejected.setdefault(replica.replica_id, "no_scored_domains")
+                    continue
                 rho = edge_rho(replica, residual, domains=domain_names, eps=self._eps)
                 risks = RiskTerms(
                     x=interference_risk(
-                        candidate=replica.model_name,
-                        colocated=[r for r in residual.placed_replicas],
+                        candidate=profile_key,
+                        colocated=state.resident_profile_keys_of(did),
                         bucket="mid",
                         table=interference,
                         eta=self._eta,
@@ -87,7 +96,8 @@ class HarmonicFitPlanner:
                 continue
             # Re-check feasibility now that earlier picks may have used residual.
             residual = state.residual_of(did)
-            ok, _reason = self._feasibility.check(replica, snapshots[replica.model_name], residual)
+            key = replica.profile_key or replica.model_name
+            ok, _reason = self._feasibility.check(replica, snapshots[key], residual)
             if not ok:
                 continue
             placements[replica.replica_id] = DeviceId(did)
@@ -105,5 +115,6 @@ class HarmonicFitPlanner:
             placements=placements,
             rejected=rejected,
             score_breakdown=breakdowns,
-            frontier_versions={ModelId(r.model_name): FrontierVersion(snapshots[r.model_name].version) for r in replicas if r.model_name in snapshots},
+            frontier_versions={ModelId(key): FrontierVersion(snapshots[key].version)
+                               for r in replicas if (key := r.profile_key or r.model_name) in snapshots},
         )

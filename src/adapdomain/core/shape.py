@@ -46,6 +46,7 @@ class TenantShape(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     model_name: str
+    profile_key: str | None = None
     replica_id: ReplicaId
     domains: dict[str, float]
     slo_ms: float = Field(gt=0)
@@ -103,6 +104,8 @@ def update_residual(state: DeviceResidual, placed: Sequence[TenantShape]) -> Dev
 
 
 def domain_fit_ratio(r: float, R: float, eps: float = EPSILON_DOMAIN_FIT) -> float:
+    if r == R:
+        return 1.0
     return min(r / (R + eps), R / (r + eps))
 
 

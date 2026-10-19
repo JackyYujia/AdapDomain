@@ -26,8 +26,9 @@ def llm_pd(
     trace_csv: Path | None = typer.Option(None, help="Measured or generated phase trace CSV. If omitted, use a deterministic bursty trace."),
     out: Path = typer.Option(Path("data/results/llm_pd"), help="Output directory."),
     num_cards: int = typer.Option(4, min=1, help="Number of NPU cards."),
+    precision: str | None = typer.Option(None, help="Select one precision from a mixed profile CSV."),
 ) -> None:
-    profiles = load_profiles_csv(profiles_csv) if profiles_csv else default_profiles()
+    profiles = load_profiles_csv(profiles_csv, precision=precision) if profiles_csv else default_profiles()
     trace = load_trace_csv(trace_csv) if trace_csv else bursty_trace()
     results = run_llm_pd_experiment(LlmPdInputs(profiles=profiles, trace=trace, num_cards=num_cards))
     write_results(results, out)
@@ -49,4 +50,3 @@ def llm_pd(
     console = Console()
     console.print(table)
     console.print(f"[green]Wrote[/green] {out / 'llm_pd_summary.csv'}")
-

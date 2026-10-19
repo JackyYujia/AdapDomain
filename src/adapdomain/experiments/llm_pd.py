@@ -122,26 +122,37 @@ def bursty_trace(
     return trace
 
 
-def load_profiles_csv(path: str | Path) -> dict[str, PhaseProfile]:
-    rows = list(csv.DictReader(Path(path).open(newline="")))
+def load_profiles_csv(path: str | Path, *, precision: str | None = None) -> dict[str, PhaseProfile]:
+    with Path(path).open(newline="", encoding="utf-8") as stream:
+        rows = list(csv.DictReader(stream))
     if not rows:
         raise ValueError(f"{path} has no rows")
+    precisions = {row["precision"].strip().upper() for row in rows if row.get("precision")}
+    if precision is not None:
+        if not precisions:
+            raise ValueError("profile CSV has no precision column")
+        rows = [row for row in rows if row.get("precision", "").strip().upper() == precision.upper()]
+        if not rows:
+            raise ValueError(f"no profiles for precision {precision}")
+    elif len(precisions) > 1:
+        raise ValueError("profile CSV mixes precisions; select one with --precision")
     profiles: dict[str, list[PhaseProfile]] = {"prefill": [], "decode": []}
+    operating_points: dict[str, set[tuple[str, str, str]]] = {"prefill": set(), "decode": set()}
     for row in rows:
         phase = row["phase"].strip().lower()
         if phase not in profiles:
             continue
+        operating_points[phase].add((row.get("batch_size", ""), row.get("prompt_tokens", ""),
+                                     row.get("kv_cache_tokens", "")))
         profiles[phase].append(
             PhaseProfile(
                 phase=phase,
                 cube=_float(row, "cube_util"),
                 vector=_float(row, "vector_util"),
-                hbm=_float(row, "hbm_gb", default=0.0) / max(_float(row, "hbm_capacity_gb", default=1.0), 1e-9)
-                if row.get("hbm_capacity_gb")
-                else min(1.0, _float(row, "hbm_gb", default=0.0) / 64.0),
+                hbm=_float(row, "hbm_bw_util"),
                 service_ms=_float(row, "p95_ms"),
                 slo_ms=_float(row, "slo_ms"),
-                kv_cache_gb=_float(row, "kv_cache_tokens", default=0.0) / 1024.0,
+                kv_cache_gb=_float(row, "kv_cache_gb", default=0.0),
                 batch_size=int(_float(row, "batch_size", default=1.0)),
                 sampling_policy=row.get("sampling_policy", "unknown"),
             )
@@ -150,6 +161,8 @@ def load_profiles_csv(path: str | Path) -> dict[str, PhaseProfile]:
     for phase, values in profiles.items():
         if not values:
             continue
+        if len(operating_points[phase]) > 1:
+            raise ValueError(f"{path} mixes {phase} operating points; filter the CSV to one setting per phase")
         out[phase] = PhaseProfile(
             phase=phase,
             cube=mean(v.cube for v in values),

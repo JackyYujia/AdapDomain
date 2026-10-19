@@ -32,8 +32,9 @@ References:
   `ACL_RT_DEV_RES_CUBE_CORE = 0` and `ACL_RT_DEV_RES_VECTOR_CORE = 1`.
   These values are prefilled in `configs/hardware/ascend_910b3_4card.yaml`
   under `acl.set_device_res_limit`.
-- No HBM resource-limit type is configured. HBM is tracked as a risk and
-  telemetry domain, not as a schedulable ACL quota in this prototype.
+- No HBM resource-limit type is configured. Measured HBM bandwidth is budgeted
+  by the scheduler as a third dimension, but is not an ACL-enforced quota.
+  Physical HBM capacity remains a separate memory guard.
 
 ## Cleanup expectations
 

@@ -55,6 +55,9 @@ app.add_typer(_plot_app, name="plot")
 from adapdomain.cli.commands.llm_pd import app as _llm_pd_app
 app.add_typer(_llm_pd_app, name="llm-pd")
 
+from adapdomain.cli.commands.llm_measure import llm_measure
+app.command("llm-measure")(llm_measure)
+
 
 if __name__ == "__main__":
     app()

@@ -13,6 +13,8 @@ class RejectReason(str, Enum):
     CUBE = "insufficient_cube_residual"
     VECTOR = "insufficient_vector_residual"
     HBM = "hbm_pressure_above_threshold"
+    HBM_BANDWIDTH = "insufficient_hbm_bandwidth_residual"
+    DOMAIN = "insufficient_domain_residual"
     QUEUE = "queue_pressure_above_threshold"
     CONFIDENCE = "frontier_confidence_below_threshold"
 
@@ -34,10 +36,14 @@ class FeasibilityFilter:
             return False, RejectReason.SLO
         if point.confidence < self.confidence_min:
             return False, RejectReason.CONFIDENCE
-        if replica.domains.get("cube", 0) > device.residual.get("cube", 0):
-            return False, RejectReason.CUBE
-        if replica.domains.get("vector", 0) > device.residual.get("vector", 0):
-            return False, RejectReason.VECTOR
+        for domain, demand in replica.domains.items():
+            if demand > device.residual.get(domain, 0.0):
+                reason = {
+                    "cube": RejectReason.CUBE,
+                    "vector": RejectReason.VECTOR,
+                    "hbm": RejectReason.HBM_BANDWIDTH,
+                }.get(domain, RejectReason.DOMAIN)
+                return False, reason
         if device.hbm_pressure > self.hbm_max:
             return False, RejectReason.HBM
         if device.queue_pressure > self.queue_max:

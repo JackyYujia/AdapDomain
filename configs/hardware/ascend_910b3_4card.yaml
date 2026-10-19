@@ -13,9 +13,9 @@ domains:
     schedulable: true
   hbm:
     capacity: 1.0
-    unit: "fraction"
+    unit: "bandwidth_fraction"
     telemetry_key: hbm_bw_util
-    schedulable: false
+    schedulable: true     # scheduler budget, not an ACL hardware quota
 acl:
   init_config_path: null
   set_device_res_limit:
