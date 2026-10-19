@@ -25,13 +25,14 @@ Huawei's documented values: Cube core `0`, Vector core `1`, and no HBM quota.
 Use the smoke LLM PD run only to verify the offline harness. The paper's live
 goodput requires request-level logs collected on the NPU server.
 
-The official vLLM-Ascend source is pinned as a Git submodule at
-`third_party/vllm-ascend` (v0.23.0.post1). Clone with
-`git clone --recurse-submodules`, or run `git submodule update --init --recursive`
-after cloning. Install vLLM-Ascend using its version-specific upstream
-instructions on the Ascend host; this repository does not install CANN or
-bundle model weights. Validate the installed vLLM/CANN/torch-npu stack and
-the selected FP16/W8A8/W4A16 kernels on that host before collecting results.
+The official vLLM-Ascend v0.23.0.post1 source is vendored directly under
+`third_party/vllm-ascend` so a normal clone includes its files. See
+`third_party/VLLM_ASCEND_VENDOR.md` for the pinned commit, license, and its
+separate `catlass` build dependency. Install vLLM-Ascend using its
+release-specific upstream instructions on the Ascend host; this repository
+does not install CANN or bundle model weights. Validate the installed
+vLLM/CANN/torch-npu stack and the selected FP16/W8A8/W4A16 kernels there
+before collecting results.
 
 For measured request logs, `adapdomain llm-measure` reports SLO-satisfying
 goodput using both TTFT and mean inter-token latency. The older `llm-pd`

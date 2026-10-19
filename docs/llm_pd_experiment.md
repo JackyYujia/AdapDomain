@@ -5,8 +5,8 @@
 `llm-pd` is an offline scheduling model. Supplying measured phase profiles
 does not make its output a live hardware measurement. It uses modeled service
 times and a phase-arrival trace, so its `goodput_qps` is not the paper's
-request-level goodput. The official runtime source is the pinned
-`third_party/vllm-ascend` submodule; deploy and validate it on the Ascend host
+request-level goodput. The official runtime source is vendored at
+`third_party/vllm-ascend`; deploy and validate it on the Ascend host
 following upstream's release-specific instructions.
 
 This experiment is the runnable environment for the LLM reviewer request. It
